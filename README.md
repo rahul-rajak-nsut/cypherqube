@@ -69,19 +69,14 @@ machines. When they arrive, a quantum computer running
 encryption that would take classical computers billions of years.
 
 <br/>
-```
-┌─────────────────────────────────────────────────────────────┐
-│                    THE QUANTUM THREAT                        │
-│                                                             │
-│  TODAY          →   Harvest Now, Decrypt Later attacks      │
-│  NEAR FUTURE    →   Quantum computers break RSA/ECDSA       │
-│  THE RISK       →   All your past encrypted data exposed    │
-│                                                             │
-│  THE SOLUTION   →   Migrate to NIST PQC algorithms NOW      │
-│  THE TOOL       →   CypherQube scans and tells you what     │
-│                     to fix — before it's too late           │
-└─────────────────────────────────────────────────────────────┘
-```
+
+| | THE QUANTUM THREAT |
+|---|---|
+| **TODAY** | Harvest Now, Decrypt Later attacks |
+| **NEAR FUTURE** | Quantum computers break RSA/ECDSA |
+| **THE RISK** | All your past encrypted data exposed |
+| **THE SOLUTION** | Migrate to NIST PQC algorithms NOW |
+| **THE TOOL** | CypherQube scans and tells you what to fix — before it's too late |
 
 <br/>
 
@@ -97,11 +92,12 @@ so they can decrypt it retroactively.
 <br/>
 
 ### 📊 The Scale of the Problem
-```
-~95%  →  of public servers still use quantum-vulnerable key exchange
-~99%  →  of HTTPS connections use RSA or ECDSA certificates  
-  0   →  open-source tools that scan and score PQC readiness (before CypherQube)
-```
+
+| Statistic | |
+|---|---|
+| **~95%** | of public servers still use quantum-vulnerable key exchange |
+| **~99%** | of HTTPS connections use RSA or ECDSA certificates |
+| **0** | open-source tools that scan and score PQC readiness (before CypherQube) |
 
 <br/>
 
@@ -110,88 +106,18 @@ so they can decrypt it retroactively.
 ## ✨ Features
 
 <br/>
-```
-╔══════════════════════════════════════════════════════════════════════╗
-║                     CYPHERQUBE CAPABILITIES                         ║
-╠══════════════════════════════════════════════════════════════════════╣
-║                                                                      ║
-║  🔍  TLS SCANNING          Connect to any domain:port via OpenSSL   ║
-║                            Extract TLS version, cipher suite,        ║
-║                            key exchange, hash & signature algorithms ║
-║                                                                      ║
-║  📜  CERTIFICATE ANALYSIS  Parse full X.509 certificate              ║
-║                            Public key algo, key size, issuer,        ║
-║                            subject CN, Not Before / Not After dates  ║
-║                                                                      ║
-║  ⚛️  QUANTUM RISK SCORING  Score 0–10 based on vulnerability         ║
-║                            to Shor's and Grover's algorithms         ║
-║                            CRITICAL / MODERATE / LOW classification  ║
-║                                                                      ║
-║  ✅  PQC RECOGNITION       Detects NIST FIPS 203/204/205/206         ║
-║                            ML-KEM, ML-DSA, SLH-DSA, FN-DSA          ║
-║                            Marks post-quantum safe algorithms PASS   ║
-║                                                                      ║
-║  🛠️  REMEDIATION GUIDANCE  Per-finding specific migration advice     ║
-║                            Exact NIST algorithm replacement for      ║
-║                            every vulnerable component found          ║
-║                                                                      ║
-║  📊  STREAMLIT DASHBOARD   Dark SIEM-style web UI at localhost:8501  ║
-║                            Real-time results, findings, cert details ║
-║                            Risk score reference guide built-in       ║
-║                                                                      ║
-║  📄  PDF EXPORT            Professional dark-themed report           ║
-║                            All findings, scores, recommendations     ║
-║                            Ready for audit and compliance submission  ║
-║                                                                      ║
-║  🖥️  CLI MODE              Full terminal interface                   ║
-║                            JSON and PDF export flags                 ║
-║                            Scriptable for automation pipelines       ║
-║                                                                      ║
-║  🔁  BULK SCANNING         Scan up to 5 domains simultaneously       ║
-║                            Batch results table with risk levels      ║
-║                            One click to assess entire infrastructure ║
-║                                                                      ║
-╚══════════════════════════════════════════════════════════════════════╝
-```
 
-<br/>
-
----
-
-## 📁 Project Structure
-
-<br/>
-```
-cypherQube/
-│
-├── 🖥️  app.py              →  Streamlit web dashboard
-│                              Main UI, scan trigger, results display,
-│                              bulk scan panel, certificate details view
-│
-├── ⌨️  cli.py              →  Command-line interface entry point
-│                              Argument parsing, output formatting,
-│                              JSON and PDF export flags
-│
-├── 🔍  scanner.py          →  Core TLS scanner and certificate parser
-│                              OpenSSL subprocess handler,
-│                              TLS handshake executor,
-│                              X.509 certificate parser
-│
-├── ⚛️  risk_engine.py      →  Quantum risk scoring engine
-│                              Shor's algorithm vulnerability mapping,
-│                              Grover's algorithm weakness detection,
-│                              NIST PQC algorithm recognition,
-│                              0–10 score calculator
-│
-├── 📄  pdf_report.py       →  PDF report generator
-│                              ReportLab dark theme renderer,
-│                              Findings formatter,
-│                              Remediation section builder
-│
-├── 🎨  favicon.png         →  CypherQube logo / favicon
-│
-└── 📦  requirements.txt    →  Python dependencies
-```
+| Feature | Description |
+|---|---|
+| 🔍 **TLS Scanning** | Connect to any domain:port via OpenSSL. Extract TLS version, cipher suite, key exchange, hash & signature algorithms |
+| 📜 **Certificate Analysis** | Parse full X.509 certificate — public key algo, key size, issuer, subject CN, Not Before / Not After dates |
+| ⚛️ **Quantum Risk Scoring** | Score 0–10 based on vulnerability to Shor's and Grover's algorithms. CRITICAL / MODERATE / LOW classification |
+| ✅ **PQC Recognition** | Detects NIST FIPS 203/204/205/206 — ML-KEM, ML-DSA, SLH-DSA, FN-DSA. Marks post-quantum safe algorithms PASS |
+| 🛠️ **Remediation Guidance** | Per-finding specific migration advice. Exact NIST algorithm replacement for every vulnerable component found |
+| 📊 **Streamlit Dashboard** | Dark SIEM-style web UI at localhost:8501. Real-time results, findings, cert details, and risk score reference guide |
+| 📄 **PDF Export** | Professional dark-themed report with all findings, scores, recommendations — ready for audit and compliance submission |
+| 🖥️ **CLI Mode** | Full terminal interface with JSON and PDF export flags. Scriptable for automation pipelines |
+| 🔁 **Bulk Scanning** | Scan up to 5 domains simultaneously. Batch results table with risk levels — one click to assess entire infrastructure |
 
 <br/>
 
@@ -204,6 +130,7 @@ cypherQube/
 ### Prerequisites
 
 Before installing CypherQube, make sure you have:
+
 ```
 ✅  Python 3.10 or higher
 ✅  OpenSSL installed on your system
@@ -215,7 +142,7 @@ Before installing CypherQube, make sure you have:
 
 ### Step 1 — Clone the Repository
 ```bash
-git clone https://github.com/Sumit0x00/cypherqube.git
+git clone https://github.com/SiddharthRiot/cypherqube.git
 cd cypherqube
 ```
 
@@ -364,22 +291,17 @@ Findings:
 <br/>
 
 ### How the Score is Calculated
-```
-┌─────────────────────────────────────────────────────────────┐
-│                   SCORING ALGORITHM                          │
-│                                                             │
-│  Start Score = 0                                            │
-│                                                             │
-│  Key Exchange (ECDH/X25519/RSA)  →  +3 pts  (Shor's)       │
-│  TLS Signature (ECDSA/RSA)       →  +3 pts  (Shor's)       │
-│  Certificate Public Key          →  +3 pts  (Shor's)       │
-│  Hash Function (SHA-256/MD5)     →  +1 pt   (Grover's)     │
-│  Unknown Algorithm               →  +1 pt   (unverified)   │
-│  NIST PQC Algorithm Detected     →   0 pts  (PASS)         │
-│                                                             │
-│  Final Score → classified as CRITICAL / MODERATE / LOW     │
-└─────────────────────────────────────────────────────────────┘
-```
+
+| Component | Score Impact | Threat |
+|---|:---:|---|
+| Key Exchange (ECDH / X25519 / RSA) | +3 pts | Shor's Algorithm |
+| TLS Signature (ECDSA / RSA) | +3 pts | Shor's Algorithm |
+| Certificate Public Key | +3 pts | Shor's Algorithm |
+| Hash Function (SHA-256 / MD5) | +1 pt | Grover's Algorithm |
+| Unknown Algorithm | +1 pt | Unverified |
+| NIST PQC Algorithm Detected | 0 pts | ✅ PASS |
+
+> **Start Score = 0.** Points are added per vulnerable component found. Final score is classified as CRITICAL / MODERATE / LOW.
 
 <br/>
 
@@ -428,10 +350,11 @@ zero score penalty:
 <br/>
 
 ### Hybrid Schemes Recognised
-```
-X25519MLKEM768    →  Hybrid key exchange (classical + post-quantum)
-X25519Kyber768    →  Hybrid key exchange (classical + post-quantum)
-```
+
+| Scheme | Type |
+|---|---|
+| `X25519MLKEM768` | Hybrid key exchange (classical + post-quantum) |
+| `X25519Kyber768` | Hybrid key exchange (classical + post-quantum) |
 
 > These hybrid schemes provide both classical and post-quantum
 > security simultaneously — recognised and marked safe by CypherQube.
@@ -443,31 +366,32 @@ X25519Kyber768    →  Hybrid key exchange (classical + post-quantum)
 ## 🔒 Security Philosophy
 
 <br/>
-```
-CypherQube is a PASSIVE scanner.
 
-It performs only standard TLS handshakes —
-identical to what your browser does when visiting a website.
+**CypherQube is a PASSIVE scanner.**
 
-✅  No exploit payloads sent
-✅  No data modified on target server
-✅  No intrusive probing
-✅  No authentication required
-✅  Works on any publicly accessible TLS endpoint
+It performs only standard TLS handshakes — identical to what your browser does when visiting a website.
 
-It reads. It reports. It never touches.
-```
+| | |
+|---|---|
+| ✅ | No exploit payloads sent |
+| ✅ | No data modified on target server |
+| ✅ | No intrusive probing |
+| ✅ | No authentication required |
+| ✅ | Works on any publicly accessible TLS endpoint |
+
+> *It reads. It reports. It never touches.*
 
 <br/>
 
 ---
 
 ## 📦 Dependencies
-```
-streamlit      →  Web dashboard UI
-reportlab      →  PDF report generation
-pandas         →  Data handling and batch scan results
-```
+
+| Package | Purpose |
+|---|---|
+| `streamlit` | Web dashboard UI |
+| `reportlab` | PDF report generation |
+| `pandas` | Data handling and batch scan results |
 
 Install all with:
 ```bash
@@ -481,18 +405,14 @@ pip install -r requirements.txt
 ## 🗺️ Roadmap
 
 <br/>
-```
-DETECTION                    INTEGRATION                 INTELLIGENCE
-─────────────────────        ─────────────────────       ──────────────────────
-☐ Hybrid PQC TLS detection   ☐ CI/CD pipeline plugin     ☐ Internet-wide PQC
-☐ Full TLS 1.3 extension      ☐ Nmap / Shodan API          dataset
-  parsing                     ☐ SIEM webhook alerts       ☐ Automated migration
-☐ OCSP & cert chain depth     ☐ REST API for 3rd-party     recommendations
-☐ JA3 / JA3S fingerprinting    tools                     ☐ Multi-org SaaS
-                              ☐ GitHub Actions support     dashboard
-                                                          ☐ Community algo
-                                                           updates
-```
+
+| Detection | Integration | Intelligence |
+|---|---|---|
+| ☐ Hybrid PQC TLS detection | ☐ CI/CD pipeline plugin | ☐ Internet-wide PQC dataset |
+| ☐ Full TLS 1.3 extension parsing | ☐ Nmap / Shodan API | ☐ Automated migration recommendations |
+| ☐ OCSP & cert chain depth | ☐ SIEM webhook alerts | ☐ Multi-org SaaS dashboard |
+| ☐ JA3 / JA3S fingerprinting | ☐ REST API for 3rd-party tools | ☐ Community algo updates |
+| | ☐ GitHub Actions support | |
 
 <br/>
 
@@ -605,27 +525,6 @@ DETECTION                    INTEGRATION                 INTELLIGENCE
 
 ---
 
-## 📄 License
-```
-MIT License
-
-Copyright (c) 2026 Team Threat Lab — IIT Kanpur
-
-Permission is hereby granted, free of charge, to any person obtaining
-a copy of this software and associated documentation files (the "Software"),
-to deal in the Software without restriction, including without limitation
-the rights to use, copy, modify, merge, publish, distribute, sublicense,
-and/or sell copies of the Software, and to permit persons to whom the
-Software is furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included
-in all copies or substantial portions of the Software.
-
-Built for educational and security research purposes.
-```
-
----
-
 <div align="center">
 
 <br/>
@@ -640,7 +539,7 @@ Built for educational and security research purposes.
 
 <br/>
 
-![visitors](https://visitor-badge.laobi.icu/badge?page_id=Sumit0x00.cypherqube&left_color=black&right_color=red)
+![visitors](https://visitor-badge.laobi.icu/badge?page_id=SiddhathRiot.cypherqube&left_color=black&right_color=red)
 
 <br/>
 
