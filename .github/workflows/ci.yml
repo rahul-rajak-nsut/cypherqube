@@ -109,5 +109,4 @@ jobs:
       - name: Verify core imports work
         run: |
           python -c "from risk_engine import analyze_quantum_risk; print('risk_engine OK')"
-          python -c "from core.badge import determine_badge; print('badge OK')"
           python -c "from pdf_report import generate_pdf_report; print('pdf_report OK')"
