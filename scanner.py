@@ -42,6 +42,7 @@ def run_openssl(target, port):
             "s_client",
             "-connect", f"{target}:{port}",
             "-servername", target,
+            "-brief",
             "-showcerts"
         ]
         result = _run_openssl_command(cmd)
@@ -55,13 +56,29 @@ def run_openssl(target, port):
         return None
 
 def extract_tls_version(output):
-    match = re.search(r"Protocol\s*:\s*(TLSv[\d.]+)", output)
-    return match.group(1) if match else "Unknown"
+    patterns = [
+        r"Protocol\s*:\s*(TLSv[\d.]+)",
+        r"New,\s*(TLSv[\d.]+),",
+        r"CONNECTION ESTABLISHED\s*\nProtocol version:\s*(TLSv[\d.]+)",
+    ]
+    for pattern in patterns:
+        match = re.search(pattern, output, re.IGNORECASE)
+        if match:
+            return match.group(1)
+    return "Unknown"
 
 
 def extract_cipher(output):
-    match = re.search(r"Cipher\s*:\s*([A-Z0-9_\-]+)", output)
-    return match.group(1) if match else "Unknown"
+    patterns = [
+        r"Cipher\s*:\s*([A-Z0-9_\-]+)",
+        r"Cipher is\s*([A-Z0-9_\-]+)",
+        r"Ciphersuite:\s*([A-Z0-9_\-]+)",
+    ]
+    for pattern in patterns:
+        match = re.search(pattern, output, re.IGNORECASE)
+        if match:
+            return match.group(1)
+    return "Unknown"
 
 
 def extract_key_exchange(output):
@@ -70,13 +87,27 @@ def extract_key_exchange(output):
 
 
 def extract_signature(output):
-    match = re.search(r"Peer signature type:\s*([A-Za-z0-9\-_]+)", output)
-    return match.group(1) if match else "Unknown"
+    patterns = [
+        r"Peer signature type:\s*([A-Za-z0-9\-_]+)",
+        r"Signature type:\s*([A-Za-z0-9\-_]+)",
+    ]
+    for pattern in patterns:
+        match = re.search(pattern, output, re.IGNORECASE)
+        if match:
+            return match.group(1)
+    return "Unknown"
 
 
 def extract_hash(output):
-    match = re.search(r"Hash used:\s*([A-Za-z0-9\-_]+)", output)
-    return match.group(1) if match else "Unknown"
+    patterns = [
+        r"Hash used:\s*([A-Za-z0-9\-_]+)",
+        r"Hash algorithm:\s*([A-Za-z0-9\-_]+)",
+    ]
+    for pattern in patterns:
+        match = re.search(pattern, output, re.IGNORECASE)
+        if match:
+            return match.group(1)
+    return "Unknown"
 
 
 def get_certificate(target, port):

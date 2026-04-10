@@ -1,4 +1,4 @@
-"""Streamlit dashboard renderer for CypherQube."""
+﻿"""Streamlit dashboard renderer for CypherQube."""
 
 import json
 
@@ -6,10 +6,8 @@ import pandas as pd
 import streamlit as st
 
 
-def render_app(*, analyze_target, generate_pdf_report, determine_badge, cbom_generator_cls):
+def render_app(*, assess_target, batch_assess_targets, generate_pdf_report):
     """Render the Streamlit application using injected modules."""
-    _ = determine_badge
-    _ = cbom_generator_cls
 
     st.set_page_config(
         page_title="CypherQube — TLS Scanner",
@@ -1018,6 +1016,93 @@ def render_app(*, analyze_target, generate_pdf_report, determine_badge, cbom_gen
             html_parts.append(block)
     
         return "".join(html_parts)
+
+    def build_remediation_html(remediation):
+        if not remediation:
+            return (
+                '<div class="cq-finding-row">'
+                '<div class="cq-finding-top">'
+                '<span class="cq-sev-badge sev-LOW">PASS</span>'
+                '<div class="cq-finding-body">'
+                '<div class="cq-finding-cat">No urgent remediation</div>'
+                '<div class="cq-finding-desc">No actionable migration items were generated for this scan.</div>'
+                '</div></div></div>'
+            )
+
+        html_parts = []
+        for item in remediation:
+            sev = item.get("priority", "INFO")
+            refs = ", ".join(ref.get("id", "") for ref in item.get("nist_references", [])) or "General guidance"
+            badge = "HNDL Priority" if item.get("hndl_priority") else sev
+            block = (
+                f'<div class="cq-finding-row">'
+                f'<div class="cq-finding-top">'
+                f'<span class="cq-sev-badge sev-{sev}">{badge}</span>'
+                f'<div class="cq-finding-body">'
+                f'<div class="cq-finding-cat">{item.get("component", "")}</div>'
+                f'<div class="cq-finding-desc">{item.get("issue", "")}</div>'
+                f'</div></div>'
+                f'<div class="cq-remediation">'
+                f'<div class="cq-rem-title">Recommended Action</div>'
+                f'<div class="cq-rem-body">{item.get("recommended_action", "")}<br><strong>Implementation:</strong> {item.get("implementation_hint", "")}<br><strong>NIST:</strong> {refs}</div>'
+                f'</div></div>'
+            )
+            html_parts.append(block)
+        return "".join(html_parts)
+
+    def build_nist_html(references):
+        if not references:
+            return '<div class="cq-finding-desc">No specific NIST PQC references mapped for this assessment.</div>'
+
+        html_parts = []
+        for ref in references:
+            html_parts.append(
+                f'<div class="cq-finding-row">'
+                f'<div class="cq-finding-top">'
+                f'<span class="cq-sev-badge sev-INFO">{ref.get("id", "")}</span>'
+                f'<div class="cq-finding-body">'
+                f'<div class="cq-finding-cat">{ref.get("name", "")}</div>'
+                f'<div class="cq-finding-desc">{ref.get("family", "")}<br><a href="{ref.get("url", "#")}" target="_blank">{ref.get("url", "")}</a></div>'
+                f'</div></div></div>'
+            )
+        return "".join(html_parts)
+
+    def build_cbom_html(cbom):
+        entries = cbom.get("entries", [])
+        summary = cbom.get("summary", {})
+        if not entries:
+            return '<div class="cq-finding-desc">No CBOM inventory available.</div>'
+
+        rows = [
+            f"""
+            <tr>
+                <td>{entry.get("target", "—")}</td>
+                <td>{entry.get("tls_version", "—")}</td>
+                <td>{entry.get("cipher_suite", "—")}</td>
+                <td>{entry.get("key_exchange", "—")}</td>
+                <td>{entry.get("risk_label", "—")}</td>
+                <td>{entry.get("pqc_readiness", "—")}</td>
+            </tr>
+            """
+            for entry in entries
+        ]
+
+        return f"""
+        <div style="padding:1rem 1.4rem 0.4rem;">
+            <div style="font-family:Arial,sans-serif;font-size:0.72rem;color:#6b7a8d;margin-bottom:0.8rem;">
+                Total Assets: <strong>{summary.get('total_assets', 0)}</strong> ·
+                Quantum Safe: <strong>{summary.get('quantum_safe', 0)}</strong> ·
+                Not Quantum Safe: <strong>{summary.get('not_quantum_safe', 0)}</strong> ·
+                Risk Ratio: <strong>{summary.get('risk_ratio', '0/0')}</strong>
+            </div>
+            <table class="cq-kv-table">
+                <tr>
+                    <td>Target</td><td>TLS Version</td><td>Cipher Suite</td><td>Key Exchange</td><td>Risk</td><td>PQC Readiness</td>
+                </tr>
+                {''.join(rows)}
+            </table>
+        </div>
+        """
     
     
     st.markdown("""
@@ -1135,18 +1220,21 @@ def render_app(*, analyze_target, generate_pdf_report, determine_badge, cbom_gen
                 st.warning(f"⚠ Input uses http:// — scanning port {port} for TLS anyway. Plain HTTP sites have no TLS and the scan may fail.")
     
             target = normalize_target(raw_target)
-    
+
             with st.spinner(f"Analysing {target}:{port} — please wait..."):
-                report = analyze_target(target, port)
-    
+                report = assess_target(target, port)
+
             if report:
-                tls          = report.get("tls_version", "—")
-                cipher       = report.get("cipher_suite", "—")
-                key_exchange = report.get("key_exchange", "—")
-                cert         = report.get("certificate", {})
-                risk         = report.get("quantum_risk", {})
-                score        = risk.get("risk_score", 0)
-                findings     = risk.get("findings", [])
+                inventory    = report.get("inventory", {})
+                tls          = inventory.get("tls_version", "—")
+                cipher       = inventory.get("cipher_suite", "—")
+                key_exchange = inventory.get("key_exchange", "—")
+                cert         = inventory.get("certificate", {})
+                score        = report.get("summary", {}).get("risk_score", 0)
+                findings     = report.get("findings", [])
+                remediation  = report.get("remediation", [])
+                nist_refs    = report.get("nist_references", [])
+                cbom         = report.get("cbom", {})
     
                 label, css, score_cls = risk_meta(score)
     
@@ -1241,6 +1329,36 @@ def render_app(*, analyze_target, generate_pdf_report, determine_badge, cbom_gen
                 </div>
                 """, unsafe_allow_html=True)
                 st.markdown(findings_html, unsafe_allow_html=True)
+
+                st.markdown(f"""
+                <div class="cq-findings-panel">
+                    <div class="cq-findings-header">
+                        <span class="cq-findings-title">Actionable Remediation</span>
+                        <span class="cq-findings-badge">{len(remediation)} actions</span>
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
+                st.markdown(build_remediation_html(remediation), unsafe_allow_html=True)
+
+                st.markdown(f"""
+                <div class="cq-findings-panel">
+                    <div class="cq-findings-header">
+                        <span class="cq-findings-title">NIST PQC Mapping</span>
+                        <span class="cq-findings-badge">{len(nist_refs)} standards</span>
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
+                st.markdown(build_nist_html(nist_refs), unsafe_allow_html=True)
+
+                st.markdown(f"""
+                <div class="cq-cert-panel" style="margin-top:1rem;">
+                    <div class="cq-cert-header">
+                        <div class="cq-cert-icon-wrap">CB</div>
+                        CBOM / Crypto Inventory
+                    </div>
+                    {build_cbom_html(cbom)}
+                </div>
+                """, unsafe_allow_html=True)
                 
     
                 # Export section 
@@ -1271,7 +1389,7 @@ def render_app(*, analyze_target, generate_pdf_report, determine_badge, cbom_gen
                         use_container_width=True
                     )
     
-                with st.expander(" Raw Cryptographic Inventory (JSON)"):
+                with st.expander(" Raw Assessment JSON"):
                     st.json(report)
     
     MAX_BULK = 5
@@ -1326,11 +1444,9 @@ def render_app(*, analyze_target, generate_pdf_report, determine_badge, cbom_gen
             if trimmed > 0:
                 st.warning(f"⚠ {total_provided} URLs provided — limit is {MAX_BULK}. Scanning first {MAX_BULK} only. Ignored: {', '.join(raw_lines[MAX_BULK:])}")
     
-            results  = []
-            errors   = []
             progress = st.progress(0)
             status   = st.empty()
-    
+
             for i, raw in enumerate(targets):
                 domain = normalize_target(raw)
                 status.markdown(
@@ -1338,15 +1454,12 @@ def render_app(*, analyze_target, generate_pdf_report, determine_badge, cbom_gen
                     f'Scanning <strong style="color:#0a2352;">{domain}</strong> [{i+1}/{len(targets)}]</div>',
                     unsafe_allow_html=True
                 )
-                try:
-                    r = analyze_target(domain, 443)
-                    if r:
-                        results.append(r)
-                except Exception as e:
-                    errors.append({"target": domain, "error": str(e)})
-    
                 progress.progress((i + 1) / len(targets))
-    
+
+            batch_report = batch_assess_targets(targets, default_port=443)
+            results = batch_report.get("results", [])
+            errors = batch_report.get("errors", [])
+
             status.empty()
             progress.empty()
     
@@ -1382,18 +1495,44 @@ def render_app(*, analyze_target, generate_pdf_report, determine_badge, cbom_gen
             if results:
                 table = []
                 for r in results:
-                    s = r["quantum_risk"]["risk_score"]
+                    s = r["summary"]["risk_score"]
                     lbl, _, _ = risk_meta(s)
                     table.append({
                         "Target":       r["target"],
-                        "TLS Version":  r["tls_version"],
-                        "Cipher Suite": r["cipher_suite"],
-                        "Key Exchange": r["key_exchange"],
+                        "TLS Version":  r["inventory"]["tls_version"],
+                        "Cipher Suite": r["inventory"]["cipher_suite"],
+                        "Key Exchange": r["inventory"]["key_exchange"],
                         "Risk Score":   s,
                         "Risk Level":   lbl,
                     })
-    
+
                 st.dataframe(pd.DataFrame(table), use_container_width=True)
+
+                bulk_summary = batch_report.get("summary", {})
+                st.markdown(f"""
+                <div class="cq-metrics-row">
+                    <div class="cq-metric-card">
+                        <div class="cq-metric-label">Successful Targets</div>
+                        <div class="cq-metric-value">{bulk_summary.get("successful", 0)}</div>
+                        <div class="cq-metric-sub">Completed assessments</div>
+                    </div>
+                    <div class="cq-metric-card">
+                        <div class="cq-metric-label">Failed Targets</div>
+                        <div class="cq-metric-value">{bulk_summary.get("failed", 0)}</div>
+                        <div class="cq-metric-sub">Needs retry</div>
+                    </div>
+                    <div class="cq-metric-card">
+                        <div class="cq-metric-label">Critical Risk</div>
+                        <div class="cq-metric-value">{bulk_summary.get("risk_distribution", {}).get("critical", 0)}</div>
+                        <div class="cq-metric-sub">Immediate action</div>
+                    </div>
+                    <div class="cq-metric-card">
+                        <div class="cq-metric-label">Quantum Safe</div>
+                        <div class="cq-metric-value">{bulk_summary.get("risk_distribution", {}).get("safe", 0)}</div>
+                        <div class="cq-metric-sub">Low exposure</div>
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
     
                 st.markdown("""
                 <div class="cq-section" style="margin-top:1.2rem;">
@@ -1406,9 +1545,9 @@ def render_app(*, analyze_target, generate_pdf_report, determine_badge, cbom_gen
                 cols = st.columns(min(len(results), 5))
                 color_map = {"critical": "#c81e1e", "medium": "#b45309", "safe": "#166634"}
                 for idx, r in enumerate(results):
-                    s = r["quantum_risk"]["risk_score"]
+                    s = r["summary"]["risk_score"]
                     lbl, css, _ = risk_meta(s)
-                    findings_count = len(r["quantum_risk"].get("findings", []))
+                    findings_count = len(r.get("findings", []))
                     color = color_map[css]
                     with cols[idx]:
                         st.markdown(f"""
@@ -1429,6 +1568,48 @@ def render_app(*, analyze_target, generate_pdf_report, determine_badge, cbom_gen
                             </div>
                         </div>
                         """, unsafe_allow_html=True)
+
+                st.markdown(f"""
+                <div class="cq-findings-panel">
+                    <div class="cq-findings-header">
+                        <span class="cq-findings-title">Bulk Remediation Summary</span>
+                        <span class="cq-findings-badge">{len(batch_report.get("remediation_summary", []))} grouped actions</span>
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
+                bulk_remediation_cards = [
+                    {
+                        "component": item.get("component"),
+                        "priority": item.get("priority"),
+                        "issue": f"Affects {item.get('affected_targets', 0)} target(s)",
+                        "recommended_action": item.get("recommended_action"),
+                        "implementation_hint": "Apply this remediation across the impacted endpoints.",
+                        "nist_references": [],
+                        "hndl_priority": item.get("component") == "Key Exchange",
+                    }
+                    for item in batch_report.get("remediation_summary", [])[:8]
+                ]
+                st.markdown(build_remediation_html(bulk_remediation_cards), unsafe_allow_html=True)
+
+                st.markdown(f"""
+                <div class="cq-findings-panel">
+                    <div class="cq-findings-header">
+                        <span class="cq-findings-title">Bulk NIST PQC Mapping</span>
+                        <span class="cq-findings-badge">{len(batch_report.get("nist_summary", []))} standards</span>
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
+                st.markdown(build_nist_html(batch_report.get("nist_summary", [])), unsafe_allow_html=True)
+
+                st.markdown(f"""
+                <div class="cq-cert-panel" style="margin-top:1rem;">
+                    <div class="cq-cert-header">
+                        <div class="cq-cert-icon-wrap">CB</div>
+                        Bulk CBOM Summary
+                    </div>
+                    {build_cbom_html(batch_report.get("cbom", {}))}
+                </div>
+                """, unsafe_allow_html=True)
     
                 st.markdown("""
                 <div class="cq-section" style="margin-top:1.2rem;">
@@ -1442,7 +1623,7 @@ def render_app(*, analyze_target, generate_pdf_report, determine_badge, cbom_gen
                 with ecol1:
                     st.download_button(
                         "⬇ Bulk JSON Report",
-                        data=json.dumps(results, indent=4),
+                        data=json.dumps(batch_report, indent=4),
                         file_name="cypherqube_bulk.json",
                         mime="application/json",
                         use_container_width=True

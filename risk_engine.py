@@ -244,13 +244,25 @@ def analyze_quantum_risk(inventory):
 SEV_ORDER = {"CRITICAL": 0, "HIGH": 1, "MEDIUM": 2, "UNKNOWN": 3, "INFO": 4, "PASS": 5}
 
 
-def print_risk_report(findings, score):
-    """CLI helper — prints findings and risk score to terminal."""
-    label = "CRITICAL" if score >= 7 else "MODERATE" if score >= 4 else "LOW"
+def _ascii_cli(text: str) -> str:
+    return (
+        str(text)
+        .replace("—", "-")
+        .replace("–", "-")
+        .replace("→", "->")
+        .replace("â†’", "->")
+        .replace("…", "...")
+    )
 
-    print(f"\n{'─' * 60}")
-    print(f"  QUANTUM RISK SCORE : {score}/10  [{label}]")
-    print(f"{'─' * 60}")
+
+def print_risk_report(findings, score):
+    """CLI helper that prints findings using ASCII-safe separators."""
+    label = "CRITICAL" if score >= 7 else "MODERATE" if score >= 4 else "LOW"
+    divider = "-" * 60
+
+    print(f"\n{divider}")
+    print(_ascii_cli(f"  QUANTUM RISK SCORE : {score}/10  [{label}]"))
+    print(divider)
 
     if not findings:
         print("  No quantum vulnerabilities detected.")
@@ -264,13 +276,12 @@ def print_risk_report(findings, score):
             category = f.get("category", "")
             finding  = f.get("finding", "")
             rem      = f.get("remediation", "")
-            print(f"\n  [{sev}] {category}")
-            print(f"  {finding}")
+            print(_ascii_cli(f"\n  [{sev}] {category}"))
+            print(_ascii_cli(f"  {finding}"))
             if rem:
-                print(f"  → {rem}")
+                print(_ascii_cli(f"  -> {rem}"))
 
-    print(f"\n{'─' * 60}\n")
-
+    print(f"\n{divider}\n")
 def calculate_risk_score(
     tls_version=None,
     cipher_suite=None,
@@ -330,3 +341,4 @@ def calculate_risk_score(
         score += 1
 
     return min(score, 10)
+

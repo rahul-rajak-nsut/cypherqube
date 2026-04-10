@@ -3,8 +3,7 @@
 import os
 from pathlib import Path
 
-from core import CBOMGenerator, determine_badge
-from modules import analyze_target
+from modules import assess_target, batch_assess_targets
 from reports import generate_pdf_report
 from templates import relaunch_with_streamlit, render_app
 
@@ -15,10 +14,9 @@ def main() -> int:
         return relaunch_with_streamlit(str(Path(__file__).resolve()))
 
     render_app(
-        analyze_target=analyze_target,
+        assess_target=assess_target,
+        batch_assess_targets=batch_assess_targets,
         generate_pdf_report=generate_pdf_report,
-        determine_badge=determine_badge,
-        cbom_generator_cls=CBOMGenerator,
     )
     return 0
 
