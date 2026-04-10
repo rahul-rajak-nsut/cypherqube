@@ -1,6 +1,8 @@
 ﻿"""Streamlit dashboard renderer for CypherQube."""
 
+import html
 import json
+from textwrap import dedent
 
 import pandas as pd
 import streamlit as st
@@ -1073,36 +1075,45 @@ def render_app(*, assess_target, batch_assess_targets, generate_pdf_report):
         if not entries:
             return '<div class="cq-finding-desc">No CBOM inventory available.</div>'
 
-        rows = [
-            f"""
-            <tr>
-                <td>{entry.get("target", "—")}</td>
-                <td>{entry.get("tls_version", "—")}</td>
-                <td>{entry.get("cipher_suite", "—")}</td>
-                <td>{entry.get("key_exchange", "—")}</td>
-                <td>{entry.get("risk_label", "—")}</td>
-                <td>{entry.get("pqc_readiness", "—")}</td>
-            </tr>
-            """
-            for entry in entries
-        ]
+        def safe(value, default="—"):
+            if value in (None, ""):
+                value = default
+            return html.escape(str(value))
 
-        return f"""
-        <div style="padding:1rem 1.4rem 0.4rem;">
-            <div style="font-family:Arial,sans-serif;font-size:0.72rem;color:#6b7a8d;margin-bottom:0.8rem;">
-                Total Assets: <strong>{summary.get('total_assets', 0)}</strong> ·
-                Quantum Safe: <strong>{summary.get('quantum_safe', 0)}</strong> ·
-                Not Quantum Safe: <strong>{summary.get('not_quantum_safe', 0)}</strong> ·
-                Risk Ratio: <strong>{summary.get('risk_ratio', '0/0')}</strong>
+        rows = "".join(
+            (
+                "<tr>"
+                f"<td>{safe(entry.get('target'))}</td>"
+                f"<td>{safe(entry.get('tls_version'))}</td>"
+                f"<td>{safe(entry.get('cipher_suite'))}</td>"
+                f"<td>{safe(entry.get('key_exchange'))}</td>"
+                f"<td>{safe(entry.get('risk_label'))}</td>"
+                f"<td>{safe(entry.get('pqc_readiness'))}</td>"
+                "</tr>"
+            )
+            for entry in entries
+        )
+
+        return dedent(
+            f"""
+            <div style="padding:1rem 1.4rem 0.4rem;">
+                <div style="font-family:Arial,sans-serif;font-size:0.72rem;color:#6b7a8d;margin-bottom:0.8rem;">
+                    Total Assets: <strong>{summary.get('total_assets', 0)}</strong> ·
+                    Quantum Safe: <strong>{summary.get('quantum_safe', 0)}</strong> ·
+                    Not Quantum Safe: <strong>{summary.get('not_quantum_safe', 0)}</strong> ·
+                    Risk Ratio: <strong>{safe(summary.get('risk_ratio', '0/0'), '0/0')}</strong>
+                </div>
+                <table class="cq-kv-table">
+                    <thead>
+                        <tr>
+                            <td>Target</td><td>TLS Version</td><td>Cipher Suite</td><td>Key Exchange</td><td>Risk</td><td>PQC Readiness</td>
+                        </tr>
+                    </thead>
+                    <tbody>{rows}</tbody>
+                </table>
             </div>
-            <table class="cq-kv-table">
-                <tr>
-                    <td>Target</td><td>TLS Version</td><td>Cipher Suite</td><td>Key Exchange</td><td>Risk</td><td>PQC Readiness</td>
-                </tr>
-                {''.join(rows)}
-            </table>
-        </div>
-        """
+            """
+        ).strip()
     
     
     st.markdown("""
