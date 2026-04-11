@@ -82,8 +82,18 @@ def extract_cipher(output):
 
 
 def extract_key_exchange(output):
-    match = re.search(r"Server Temp Key:\s*([A-Za-z0-9\-_]+)", output)
-    return match.group(1) if match else "Unknown"
+    patterns = [
+        r"Negotiated TLS[\d.]+ group:\s*([A-Za-z0-9\-_]+)",
+        r"Peer Temp Key:\s*([A-Za-z0-9\-_]+)",
+        r"Server Temp Key:\s*([A-Za-z0-9\-_]+)",
+        r"Server public key is\s*([A-Za-z0-9\-_]+)",
+        r"key exchange:\s*([A-Za-z0-9\-_]+)",
+    ]
+    for pattern in patterns:
+        match = re.search(pattern, output, re.IGNORECASE)
+        if match:
+            return match.group(1)
+    return "Unknown"
 
 
 def extract_signature(output):
