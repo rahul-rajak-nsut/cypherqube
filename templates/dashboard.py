@@ -1333,17 +1333,17 @@ def render_app(*, assess_target, batch_assess_targets, generate_pdf_report):
                 st.markdown(f"""
                 <div class="cq-findings-panel">
                     <div class="cq-findings-header">
-                        <span class="cq-findings-title">Actionable Remediation</span>
+                        <span class="cq-findings-title">🛠️ Actionable Remediation</span>
                         <span class="cq-findings-badge">{len(remediation)} actions</span>
                     </div>
                 </div>
                 """, unsafe_allow_html=True)
                 st.markdown(build_remediation_html(remediation), unsafe_allow_html=True)
-
+                st.markdown("---") # This creates a clean horizontal line in Streamlit
                 st.markdown(f"""
                 <div class="cq-findings-panel">
                     <div class="cq-findings-header">
-                        <span class="cq-findings-title">NIST PQC Mapping</span>
+                        <span class="cq-findings-title">📋NIST PQC Mapping</span>
                         <span class="cq-findings-badge">{len(nist_refs)} standards</span>
                     </div>
                 </div>
